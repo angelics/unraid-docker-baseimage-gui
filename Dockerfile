@@ -31,10 +31,8 @@ RUN \
     echo "deb-src http://deb.nodesource.com/node_8.x $VERSION_CODENAME main" >> /etc/apt/sources.list.d/nodesource.list && \
     # Cleanup
     del-pkg build-dependencies && \
-    rm -rf /tmp/* /tmp/.[!.]*
-
-# Compile x11vnc.
-RUN \
+    rm -rf /tmp/* /tmp/.[!.]* && \
+	# Compile x11vnc.
     add-pkg --virtual build-dependencies \
             curl \
             ca-certificates \
@@ -81,10 +79,8 @@ RUN \
     cp install/bin/x11vnc /usr/bin/ && \
     # Cleanup
     del-pkg build-dependencies && \
-    rm -rf /tmp/* /tmp/.[!.]*
-
-# Install packages.
-RUN \
+    rm -rf /tmp/* /tmp/.[!.]* && \
+	# Install packages.
     apt-get -q update && \
     LIBPNG="$(apt-cache depends libpng-dev | grep 'Depends: libpng' | awk '{print $2}')" && \
     add-pkg \
@@ -106,10 +102,8 @@ RUN \
     rm -r /var/run/stunnel4 \
           /var/log/stunnel4 \
           && \
-    rm -rf /var/cache/fontconfig/*
-
-# Install noVNC.
-RUN \
+    rm -rf /var/cache/fontconfig/* && \
+	# Install noVNC.
     add-pkg --virtual build-dependencies curl ca-certificates unzip nodejs && \
     mkdir noVNC && \
     curl -sS -L ${NOVNC_URL} | tar -xz --strip 1 -C noVNC && \
@@ -154,10 +148,8 @@ RUN \
     curl -sS -L -o /opt/novnc/js/jquery.ui.touch-punch.min.js ${JQUERY_UI_TOUCH_PUNCH_URL} && \
     # Cleanup
     del-pkg build-dependencies && \
-    rm -rf /tmp/* /tmp/.[!.]*
-
-# Install nginx.
-RUN \
+    rm -rf /tmp/* /tmp/.[!.]* && \
+	# Install nginx.
     add-pkg nginx && \
     rm /etc/nginx/nginx.conf \
        /etc/init.d/nginx \
@@ -193,16 +185,13 @@ RUN \
 
 # Add files.
 COPY rootfs/ /tmp/rootfs/
+
 RUN \
 	chmod -R +x /tmp/rootfs/ && \
-	cp -R /tmp/rootfs/* /
-
-# Set version to CSS and JavaScript file URLs.
-RUN \
-	sed-patch "s/UNIQUE_VERSION/$(date | md5sum | cut -c1-10)/g" /opt/novnc/index.vnc
-
-# Minify noVNC UI JS files
-RUN \
+	cp -R /tmp/rootfs/* / && \
+	# Set version to CSS and JavaScript file URLs.
+	sed-patch "s/UNIQUE_VERSION/$(date | md5sum | cut -c1-10)/g" /opt/novnc/index.vnc && \
+	# Minify noVNC UI JS files
     add-pkg --virtual build-dependencies nodejs && \
     NOVNC_UI="\
         /opt/novnc/app/modulemgr.js \
@@ -227,10 +216,8 @@ RUN \
     sed-patch 's/\/opt\/novnc//g' /opt/novnc/js/novnc-ui.min.js.map && \
     # Cleanup
     del-pkg build-dependencies && \
-    rm -rf /tmp/* /tmp/.[!.]*
-
-# Generate and install favicons.
-RUN \
+    rm -rf /tmp/* /tmp/.[!.]* && \
+	# Generate and install favicons.
     APP_ICON_URL=https://github.com/jlesage/docker-templates/raw/master/jlesage/images/generic-app-icon.png && \
     install_app_icon.sh "$APP_ICON_URL"
 
